@@ -1,0 +1,100 @@
+<!DOCTYPE>
+<html>
+<title>网页调用摄像头拍照获得base64字符串demo</title>
+<meta charset="utf-8" />
+
+<head>
+</head>
+
+<script type="text/javascript">
+    // Put event listeners into place
+    window.addEventListener("DOMContentLoaded", function() {
+        // Grab elements, create settings, etc.
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var video = document.getElementById('video');
+        var mediaConfig = {
+            video: true
+        };
+        var errBack = function(e) {
+            console.log('An error has occurred!', e)
+        };
+        var srcObject;
+        // Put video listeners into place
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia(mediaConfig).then(function(stream) {
+                //video.src = window.URL.createObjectURL(stream);
+                video.srcObject = stream;
+                try {
+                    srcObject = stream;
+                } catch (error) {
+                    video.src = window.URL.createObjectURL(stream);
+                }
+
+
+                video.play();
+            });
+        }
+
+        /* Legacy code below! */
+        else if (navigator.getUserMedia) { // Standard
+            navigator.getUserMedia(mediaConfig, function(stream) {
+                video.src = stream;
+                video.play();
+            }, errBack);
+        } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
+            navigator.webkitGetUserMedia(mediaConfig, function(stream) {
+                video.src = window.webkitURL.createObjectURL(stream);
+                video.play();
+            }, errBack);
+        } else if (navigator.mozGetUserMedia) { // Mozilla-prefixed
+            navigator.mozGetUserMedia(mediaConfig, function(stream) {
+                video.src = window.URL.createObjectURL(stream);
+                video.play();
+            }, errBack);
+        }
+
+        // Trigger photo take
+        document.getElementById('snap').addEventListener('click', function() {
+            context.drawImage(video, 0, 0, 640, 480);
+
+            var image = convertCanvasToImage(canvas);
+            alert(image.src)
+            document.getElementById("result").value = (image.src)
+
+        });
+    }, false);
+
+
+    function getBase64Image(img) {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        var dataURL = canvas.toDataURL("image/png");
+        return dataURL
+            // return dataURL.replace("data:image/png;base64,", "");
+    }
+
+    function convertCanvasToImage(canvas) {
+        var image = new Image();
+        image.src = canvas.toDataURL("image/png");
+        return image;
+    }
+</script>
+
+<body>
+    <video id="video" width="640" height="480" autoplay></video>
+
+    <button id="snap" class="sexyButton">拍照</button>
+
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <textarea id="result" cols="50" rows="20">
+
+        </textarea>
+
+</body>
+
+</html>
